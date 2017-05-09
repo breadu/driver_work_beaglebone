@@ -63,7 +63,7 @@ int mempool_init(void)
     printk("memppool free\n");
     for (lp = 0;  lp < TEST_ELEMENT; lp++)
     {
-        if (element[lp] != NULL) 
+        if (element[lp] != NULL)
             mempool_free(element[lp], mp);
     }
 

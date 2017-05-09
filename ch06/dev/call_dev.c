@@ -12,7 +12,7 @@
 int call_open(struct inode *inode, struct file *filp)
 {
     int num = MINOR(inode->i_rdev);
-    
+
     printk("call open -> minor : %d\n", num);
 
     return 0;
@@ -36,7 +36,7 @@ ssize_t call_write(struct file *filp, const char *buf, size_t count, loff_t *f_p
     return 0x43;
 }
 
-// 'ioctl' field in file_operations changed into unlocked_ioctl from kernel 2.6.38
+// 'ioctl' field in file_operations changed into 'unlocked_ioctl' from kernel 2.6.38
 // first parameter 'struct inode* inode' has been removed from ioctl callback function
 long call_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
@@ -50,9 +50,9 @@ int call_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
-// 'ioctl' field in file_operations changed into unlocked_ioctl from kernel 2.6.38
+// 'ioctl' field in file_operations changed into 'unlocked_ioctl' from kernel 2.6.38
 // first parameter 'struct inode* inode' has been removed from ioctl callback function
-struct file_operations call_fops = 
+struct file_operations call_fops =
 {
     .owner = THIS_MODULE,
     .llseek = call_llseek,

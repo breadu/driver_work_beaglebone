@@ -21,7 +21,7 @@ int main()
         printf("2) seek function call\n");
         ret = lseek(dev, 0x20, SEEK_SET);
         printf("ret = %08X\n", ret);
-        
+
         printf("3) read function call\n");
         ret = read(dev, 0x30, 0x31);
         printf("ret = %08X\n", ret);
