@@ -23,21 +23,21 @@
 // DATAOUT register sets value of GPIO pin by setting bit of pin number(0~31).
 // DATAIN register gets value of GPIO pin by getting bit of pin number(0~31).
 #define GPIO1_ADDR            0x4804C000
+#define GPIO1_SIZE            0x1000
 #define OE_REG_OFFSET         0x134
 #define DATAOUT_REG_OFFSET    0x13C
 #define DATAIN_REG_OFFSET     0x138
 
-#define OE_REG_ADDR           (GPIO1_ADDR+OE_REG_OFFSET)
-#define DATAOUT_REG_ADDR      (GPIO1_ADDR+DATAOUT_REG_OFFSET)
-#define DATAIN_REG_ADDR       (GPIO1_ADDR+DATAIN_REG_OFFSET)
+#define OE_REG_ADDR           (addrIO+OE_REG_OFFSET)
+#define DATAOUT_REG_ADDR      (addrIO+DATAOUT_REG_OFFSET)
+#define DATAIN_REG_ADDR       (addrIO+DATAIN_REG_OFFSET)
 
 #define P9_12_GPIO1_28        28
 #define P9_23_GPIO1_17        17
 
-#define PAGE_SIZES            0x1000
-#define IO_ADDRESS(addr)      (ioremap(addr, PAGE_SIZES))
-
 #define DATAIN_VALUE(val, no) (1 & (val >> no))
+
+static void *addrIO;
 
 
 #define TIME_STEP     (2*HZ/10)
@@ -72,17 +72,17 @@ void kerneltimer_timeover(unsigned long arg)
     {
         pdata = (KERNEL_TIMER_MANAGER *)arg;
 
-        write_val = readl(IO_ADDRESS(DATAOUT_REG_ADDR));
+        write_val = readl(DATAOUT_REG_ADDR);
 
         if (pdata->led == 0)
         {
             write_val &= (0xFFFFFFFF ^ (1 << P9_12_GPIO1_28));
-            writel(write_val, IO_ADDRESS(DATAOUT_REG_ADDR));
+            writel(write_val, DATAOUT_REG_ADDR);
         }
         else
         {
             write_val |= (1 << P9_12_GPIO1_28);
-            writel(write_val, IO_ADDRESS(DATAOUT_REG_ADDR));
+            writel(write_val, DATAOUT_REG_ADDR);
         }
 
         pdata->led = ~pdata->led & 0x01;
@@ -95,11 +95,14 @@ int kerneltimer_init(void)
 {
     u32 gpio_reg;
 
+    // mapping physical memory to virtual memory
+    addrIO = ioremap(GPIO1_ADDR, GPIO1_SIZE);
+
     // Set P9_12 as output
-    gpio_reg = readl(IO_ADDRESS(OE_REG_ADDR));
+    gpio_reg = readl(OE_REG_ADDR);
     gpio_reg &= (0xFFFFFFFF ^ (1 << P9_12_GPIO1_28));
 
-    writel(gpio_reg, IO_ADDRESS(OE_REG_ADDR));
+    writel(gpio_reg, OE_REG_ADDR);
 
     // initialize kernel timer manager
     ptrmng = kmalloc(sizeof(KERNEL_TIMER_MANAGER), GFP_KERNEL);
@@ -124,10 +127,13 @@ void kerneltimer_exit(void)
         kfree(ptrmng);
     }
 
-    write_val = readl(IO_ADDRESS(DATAOUT_REG_ADDR));
+    write_val = readl(DATAOUT_REG_ADDR);
     write_val &= (0xFFFFFFFF ^ (1 << P9_12_GPIO1_28));
 
-    writel(write_val, IO_ADDRESS(DATAOUT_REG_ADDR));
+    writel(write_val, DATAOUT_REG_ADDR);
+
+    // unmapping memory
+    iounmap(addrIO);
 }
 
 module_init(kerneltimer_init);

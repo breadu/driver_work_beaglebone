@@ -6,8 +6,8 @@
 #include <linux/types.h>
 #include <linux/fcntl.h>
 
-#define CALL_DEV_NAME   "calldev"
-#define CALL_DEV_MAJOR  240
+#define CALL_DEV_NAME        "calldev"
+#define CALL_DEV_MAJOR       240
 
 int call_open(struct inode *inode, struct file *filp)
 {
